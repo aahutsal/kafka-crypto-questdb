@@ -4,3 +4,4 @@ kafka-python
 numpy
 pandas
 datetime
+ccxt

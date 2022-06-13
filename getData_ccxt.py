@@ -4,9 +4,31 @@ import datetime as dt
 
 from kafkaHelper import initProducer, produceRecord
 from config import config, params
+import ccxt as ccxt;
+from json import dumps;
+
+def async_updateTickers(exchange):
+    raw_data = exchange().loadMarkets()
+    print(len(raw_data.keys()))
+
+def async_getAllExchangeInstances():
+    return list(map(lambda name: getattr(ccxt, name)(), ccxt.exchanges))
+
+def async_getAllMarkets():
+    return list(map(lambda ex: ex.load_markets().values(), async_getAllExchangeInstances()))
+
+def hasSymbol(market, *symbols):
+    for s in symbols:
+        if (market.find('{}/'.format(s)) == -1) or (market.find('/{}'.format(s)) == -1):
+           return False
+    return True
+
+def async_filterMarkets(*symbols, markets):
+    return filter(lambda m: hasSymbol(m, ['UAH']), markets)
 
 # real time data collector
 async def async_getCryptoRealTimeData(producer, topic, crypto, time_inverval):
+    old_tickers = {}
     while True:
         t_0 = time.time()
         # call API
